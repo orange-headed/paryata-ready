@@ -1,0 +1,234 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-navy: var(--navy);
+  --color-navy-foreground: var(--navy-foreground);
+  --color-sand: var(--sand);
+  --color-leaf: var(--leaf);
+  --color-clay: var(--clay);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.4);
+}
+
+:root {
+  color-scheme: light;
+  --radius: 1rem;
+
+  /* Cream / off-white canvas */
+  --background: oklch(0.965 0.014 83);
+  --foreground: oklch(0.27 0.02 60);
+
+  --card: oklch(0.995 0.006 90);
+  --card-foreground: oklch(0.27 0.02 60);
+
+  --popover: oklch(0.995 0.006 90);
+  --popover-foreground: oklch(0.27 0.02 60);
+
+  /* Orange accent for primary actions */
+  --primary: oklch(0.67 0.18 43);
+  --primary-foreground: oklch(0.99 0.01 90);
+
+  /* Dark navy */
+  --secondary: oklch(0.28 0.045 258);
+  --secondary-foreground: oklch(0.96 0.01 90);
+
+  --muted: oklch(0.93 0.016 82);
+  --muted-foreground: oklch(0.52 0.02 60);
+
+  /* Warm sand accent */
+  --accent: oklch(0.9 0.04 74);
+  --accent-foreground: oklch(0.32 0.03 55);
+
+  --destructive: oklch(0.58 0.2 27);
+
+  --border: oklch(0.89 0.016 78);
+  --input: oklch(0.89 0.016 78);
+  --ring: oklch(0.67 0.18 43);
+
+  --navy: oklch(0.26 0.045 258);
+  --navy-foreground: oklch(0.96 0.01 90);
+  --sand: oklch(0.9 0.04 74);
+  --leaf: oklch(0.62 0.11 145);
+  --clay: oklch(0.58 0.13 40);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* ---------- RoboBuddy animations ---------- */
+@keyframes robo-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+@keyframes robo-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+@keyframes robo-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-2px);
+  }
+}
+@keyframes robo-lean {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-7deg);
+  }
+}
+@keyframes robo-antenna-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0px var(--primary));
+    opacity: 0.8;
+  }
+  50% {
+    filter: drop-shadow(0 0 6px var(--primary));
+    opacity: 1;
+  }
+}
+@keyframes robo-blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95%,
+  97% {
+    transform: scaleY(0.1);
+  }
+}
+@keyframes robo-look-around {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(2px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+}
+
+/* ---------- Screen transition ---------- */
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-screen-in {
+  animation: screen-in 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-bubble-in {
+  animation: bubble-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.4s ease both;
+}
+
+/* ---------- Accessibility ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Keep interactive controls feeling native on touch devices. */
+button, a, input {
+  -webkit-tap-highlight-color: transparent;
+}
