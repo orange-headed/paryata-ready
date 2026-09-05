@@ -1,84 +1,386 @@
 'use client'
 
 import { useApp } from '@/lib/app-context'
-import { travelDna } from '@/lib/data'
-import { Dna, Gem, Sparkles } from 'lucide-react'
+
+import {
+  travelDna,
+  getPersonalizedDestination,
+} from '@/lib/data'
+
+import {
+  Dna,
+  Gem,
+  Sparkles,
+  MapPin,
+  Users,
+  Leaf,
+  IndianRupee,
+  ArrowRight,
+} from 'lucide-react'
 
 export function TravelDnaScreen() {
-  const { setScreen, openDestination } = useApp()
+  const {
+    setScreen,
+    openDestination,
+    travelPreferences,
+  } = useApp()
+
+  // ============================================
+  // PERSONALIZED RECOMMENDATION
+  // ============================================
+
+  const recommendation =
+    getPersonalizedDestination(
+      travelPreferences,
+    )
+
+  const recommendedDestination =
+    recommendation.destination
+
+  // ============================================
+  // LIVE TRAVEL DNA
+  // ============================================
+
+  const traits = [
+    {
+      label: 'Nature',
+      value: travelPreferences.nature,
+    },
+    {
+      label: 'Peace & Slow Travel',
+      value: travelPreferences.peace,
+    },
+    {
+      label: 'Rural & Farms',
+      value: travelPreferences.rural,
+    },
+    {
+      label: 'Culture & Heritage',
+      value: travelPreferences.culture,
+    },
+    {
+      label: 'Local Food',
+      value: travelPreferences.food,
+    },
+    {
+      label: 'Adventure',
+      value: travelPreferences.adventure,
+    },
+    {
+      label: 'Beaches',
+      value: travelPreferences.beaches,
+    },
+    {
+      label: 'Arts & Crafts',
+      value: travelPreferences.arts,
+    },
+  ]
+
+  // ============================================
+  // STRONGEST PREFERENCE LABEL
+  // ============================================
+
+  const preferenceLabels: Record<
+    keyof typeof travelPreferences,
+    string
+  > = {
+    nature: 'Nature',
+    peace: 'Peace & Slow Travel',
+    rural: 'Rural & Farms',
+    culture: 'Culture & Heritage',
+    food: 'Local Food',
+    adventure: 'Adventure',
+    beaches: 'Beaches',
+    arts: 'Arts & Crafts',
+  }
+
+  const strongestPreference =
+    preferenceLabels[
+      recommendation.strongestMatch
+    ]
 
   return (
     <div className="animate-screen-in space-y-7 px-5 py-5 pb-4">
+
+      {/* =========================================
+          HEADER
+      ========================================= */}
+
       <header className="flex items-center gap-3">
         <span className="grid size-11 place-items-center rounded-2xl bg-primary/15 text-primary">
           <Dna className="size-5" />
         </span>
+
         <h1 className="font-display text-2xl font-extrabold text-foreground">
           Your Travel DNA
         </h1>
       </header>
 
-      {/* Archetype card */}
+      {/* =========================================
+          ARCHETYPE
+      ========================================= */}
+
       <section className="overflow-hidden rounded-3xl bg-navy p-6 text-navy-foreground">
+
         <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-primary/20 px-3 py-1 text-xs font-semibold text-primary">
           <Gem className="size-3.5" />
+
           Your archetype
         </div>
+
         <h2 className="text-balance font-display text-2xl font-extrabold leading-tight">
           You&apos;re a{' '}
-          <span className="text-primary">{travelDna.archetype}.</span>
+          <span className="text-primary">
+            {travelDna.archetype}.
+          </span>
         </h2>
+
         <p className="mt-3 text-pretty text-sm leading-relaxed text-navy-foreground/85">
           {travelDna.blurb}
         </p>
+
       </section>
 
-      {/* Trait bars */}
+      {/* =========================================
+          LIVE TRAVEL DNA
+      ========================================= */}
+
       <section className="space-y-4">
+
         <h3 className="font-display text-base font-bold text-foreground">
           What drives your trips
         </h3>
+
         <div className="space-y-4 rounded-3xl bg-card p-5 shadow-sm ring-1 ring-border/60">
-          {travelDna.traits.map((t) => (
-            <div key={t.label}>
+
+          {traits.map((trait) => (
+            <div key={trait.label}>
+
               <div className="mb-1.5 flex items-center justify-between text-sm">
-                <span className="font-medium text-foreground">{t.label}</span>
-                <span className="font-bold text-foreground">{t.value}%</span>
+
+                <span className="font-medium text-foreground">
+                  {trait.label}
+                </span>
+
+                <span className="font-bold text-foreground">
+                  {trait.value}%
+                </span>
+
               </div>
+
               <div className="h-2.5 overflow-hidden rounded-full bg-muted">
+
                 <div
-                  className="h-full rounded-full transition-all duration-700"
-                  style={{ width: `${t.value}%`, backgroundColor: t.color }}
+                  className="h-full rounded-full bg-primary transition-all duration-700"
+                  style={{
+                    width: `${trait.value}%`,
+                  }}
                 />
+
               </div>
+
             </div>
           ))}
+
         </div>
+
       </section>
 
-      {/* Personalized recommendation */}
-      <section className="rounded-3xl bg-accent p-5">
-        <div className="mb-2 flex items-center gap-2">
-          <Sparkles className="size-4 text-clay" />
-          <h3 className="font-display text-base font-bold text-accent-foreground">
-            Matched to your DNA
-          </h3>
+      {/* =========================================
+          PARYATA RECOMMENDATION
+      ========================================= */}
+
+      <section className="overflow-hidden rounded-3xl bg-accent">
+
+        <div className="p-5">
+
+          <div className="mb-3 flex items-center gap-2">
+
+            <Sparkles className="size-4 text-clay" />
+
+            <h3 className="font-display text-base font-bold text-accent-foreground">
+              Paryata found a match
+            </h3>
+
+          </div>
+
+          <h2 className="font-display text-2xl font-extrabold text-accent-foreground">
+            {recommendedDestination.name}
+          </h2>
+
+          <p className="mt-1 flex items-center gap-1 text-sm text-accent-foreground/70">
+
+            <MapPin className="size-3.5" />
+
+            {recommendedDestination.state}
+
+          </p>
+
+          <p className="mt-3 text-sm leading-relaxed text-accent-foreground/80">
+
+            Your strongest preference is{' '}
+
+            <span className="font-semibold">
+              {strongestPreference}
+            </span>
+
+            . Paryata matched it with a destination
+            that also has strong tourism opportunity
+            and local community benefit.
+
+          </p>
+
+          {/* =====================================
+              PARYATA MATCH SCORE
+          ===================================== */}
+
+          <div className="mt-5 rounded-2xl bg-card/70 p-4">
+
+            <div className="flex items-center justify-between">
+
+              <span className="text-sm font-semibold text-foreground">
+                Paryata Match
+              </span>
+
+              <span className="text-2xl font-extrabold text-primary">
+                {recommendation.score}%
+              </span>
+
+            </div>
+
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-700"
+                style={{
+                  width: `${recommendation.score}%`,
+                }}
+              />
+
+            </div>
+
+          </div>
+
         </div>
-        <p className="text-pretty text-sm leading-relaxed text-accent-foreground/80">
-          Because you love <span className="font-semibold">hidden gems</span> and{' '}
-          <span className="font-semibold">food</span>, Bundi in Rajasthan is a{' '}
-          <span className="font-semibold">94% match</span> for your next escape.
-        </p>
-        <button
-          onClick={() => {
-            setScreen('explore')
-            setTimeout(() => openDestination('bundi'), 60)
-          }}
-          className="mt-4 rounded-full bg-clay px-4 py-2 text-sm font-bold text-white transition-transform active:scale-95"
-        >
-          See why Bundi fits you
-        </button>
+
+        {/* =========================================
+            SCORE BREAKDOWN
+        ========================================= */}
+
+        <div className="grid grid-cols-2 gap-px bg-border">
+
+          {/* DNA */}
+
+          <div className="bg-card p-4">
+
+            <div className="mb-1 flex items-center gap-2">
+
+              <Dna className="size-4 text-primary" />
+
+              <span className="text-xs font-semibold text-muted-foreground">
+                DNA match
+              </span>
+
+            </div>
+
+            <p className="font-display text-xl font-extrabold text-foreground">
+              {recommendation.dnaMatch}%
+            </p>
+
+          </div>
+
+          {/* TOURISM OPPORTUNITY */}
+
+          <div className="bg-card p-4">
+
+            <div className="mb-1 flex items-center gap-2">
+
+              <Leaf className="size-4 text-leaf" />
+
+              <span className="text-xs font-semibold text-muted-foreground">
+                Tourism opportunity
+              </span>
+
+            </div>
+
+            <p className="font-display text-xl font-extrabold text-foreground">
+              {recommendation.tourismOpportunity}%
+            </p>
+
+          </div>
+
+          {/* LOCAL BENEFIT */}
+
+          <div className="bg-card p-4">
+
+            <div className="mb-1 flex items-center gap-2">
+
+              <Users className="size-4 text-clay" />
+
+              <span className="text-xs font-semibold text-muted-foreground">
+                Local benefit
+              </span>
+
+            </div>
+
+            <p className="font-display text-xl font-extrabold text-foreground">
+              {recommendation.localBenefit}%
+            </p>
+
+          </div>
+
+          {/* BUDGET */}
+
+          <div className="bg-card p-4">
+
+            <div className="mb-1 flex items-center gap-2">
+
+              <IndianRupee className="size-4 text-primary" />
+
+              <span className="text-xs font-semibold text-muted-foreground">
+                Budget score
+              </span>
+
+            </div>
+
+            <p className="font-display text-xl font-extrabold text-foreground">
+              {recommendation.budgetScore}%
+            </p>
+
+          </div>
+
+        </div>
+
+        {/* =========================================
+            DISCOVER BUTTON
+        ========================================= */}
+
+        <div className="p-5">
+
+          <button
+            onClick={() => {
+              setScreen('explore')
+
+              setTimeout(() => {
+                openDestination(
+                  recommendedDestination.id,
+                )
+              }, 60)
+            }}
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-clay px-4 py-3 text-sm font-bold text-white transition-transform active:scale-95"
+          >
+
+            Discover{' '}
+            {recommendedDestination.name}
+
+            <ArrowRight className="size-4" />
+
+          </button>
+
+        </div>
+
       </section>
+
     </div>
   )
 }

@@ -2,24 +2,53 @@ export type ScreenId =
   | 'explore'
   | 'journey'
   | 'eat'
-  | 'saved'
   | 'travel-dna'
   | 'profile'
-
-export type CrowdLevel = 'Very low' | 'Low' | 'Moderate'
+  | 'saved'
 
 export type RoboState =
   | 'idle'
   | 'listening'
   | 'thinking'
+  | 'speaking'
+  | 'happy'
   | 'excited'
   | 'pointing'
   | 'concerned'
-  | 'speaking'
 
-export interface Experience {
+export type SavedCategory =
+  | 'Destination'
+  | 'Food'
+  | 'Stay'
+  | 'Experience'
+  | 'Guide'
+
+export interface TravelPreferences {
+  nature: number
+  peace: number
+  rural: number
+  culture: number
+  food: number
+  adventure: number
+  beaches: number
+  arts: number
+}
+
+export interface DestinationExperience {
   title: string
   description: string
+}
+
+export interface DestinationStay {
+  name: string
+  type: string
+  price: string
+}
+
+export interface DestinationGuide {
+  name: string
+  expertise: string
+  rating: number
 }
 
 export interface Destination {
@@ -28,18 +57,25 @@ export interface Destination {
   state: string
   image: string
   distanceKm: number
-  crowdLevel: CrowdLevel
+  crowdLevel:
+    | 'Very low'
+    | 'Low'
+    | 'Medium'
+    | 'High'
   budget: string
   tags: string[]
   hiddenGem: boolean
   shortDescription: string
   whyRecommended: string
   impact: string
-  experiences: Experience[]
+  experiences: DestinationExperience[]
   nearbyFood: string[]
-  nearbyStays: { name: string; type: string; price: string }[]
-  guides: { name: string; expertise: string; rating: number }[]
+  nearbyStays: DestinationStay[]
+  guides: DestinationGuide[]
   vibeMatch: number
+  dnaWeights: TravelPreferences
+  tourismOpportunity: number
+  localBenefit: number
 }
 
 export interface FoodItem {
@@ -49,12 +85,12 @@ export interface FoodItem {
   image: string
   price: string
   distanceKm: number
-  category: 'Local dish' | 'Street food' | 'Hidden restaurant' | 'Experience'
+  category: string
   description: string
 }
 
 export interface JourneyStop {
-  kind: 'destination' | 'experience' | 'food'
+  kind: 'experience' | 'food' | 'stay' | 'guide'
   title: string
   detail: string
 }
@@ -70,7 +106,5 @@ export interface SavedItem {
   name: string
   subtitle: string
   image: string
-  type: 'Destination' | 'Food' | 'Stay' | 'Experience'
+  type: SavedCategory
 }
-
-export type SavedCategory = SavedItem['type']
