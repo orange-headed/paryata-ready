@@ -1,5 +1,6 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useMemo, useState } from 'react'
 
 import {
@@ -10,10 +11,6 @@ import {
   DestinationCard,
   NearYouCard,
 } from '@/components/destination-card'
-
-import {
-  DiscoveryMap,
-} from '@/components/discovery-map'
 
 import { useApp } from '@/lib/app-context'
 
@@ -35,6 +32,25 @@ import {
   Leaf,
   Users,
 } from 'lucide-react'
+
+// ============================================
+// LEAFLET MAP
+// Loaded only on the client because Leaflet
+// requires the browser's window object.
+// ============================================
+
+const DiscoveryMap = dynamic(
+  () =>
+    import('@/components/discovery-map').then(
+      (mod) => mod.DiscoveryMap,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[360px] w-full animate-pulse rounded-3xl bg-muted" />
+    ),
+  },
+)
 
 export function ExploreScreen() {
   const {
