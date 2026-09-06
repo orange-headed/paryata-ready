@@ -58,8 +58,7 @@ export function RoboBuddy() {
     setRoboState,
   } = useApp()
 
-  const [msgIndex, setMsgIndex] =
-    useState(0)
+  const [msgIndex, setMsgIndex] = useState(0)
 
   const greeted = useRef(false)
 
@@ -202,7 +201,7 @@ export function RoboBuddy() {
 
   return (
     <div className="pointer-events-none fixed bottom-24 left-1/2 z-40 w-full max-w-md -translate-x-1/2 px-4">
-      <div className="pointer-events-auto flex items-end gap-2">
+      <div className="pointer-events-auto flex items-end justify-end gap-2">
         {isSpeaking && (
           <div className="animate-bubble-in relative mb-2 max-w-[15rem] rounded-2xl rounded-br-sm bg-navy px-4 py-3 text-navy-foreground shadow-xl">
             <div className="mb-1 flex items-center gap-1.5">
@@ -269,12 +268,18 @@ export function RoboBuddy() {
             />
           </div>
 
-          <span className="absolute -bottom-1 left-1/2 h-1.5 w-10 -translate-x-1/2 rounded-full bg-foreground/20 blur-[2px]" />
+          {/* Warm shadow under Paryata */}
+          <span className="absolute -bottom-1 left-1/2 h-1.5 w-10 -translate-x-1/2 rounded-full bg-black/40 blur-[2px]" />
         </button>
       </div>
     </div>
   )
 }
+
+
+/* =========================================================
+   PARYATA ROBOT
+   ========================================================= */
 
 function RobotSvg({
   looking,
@@ -302,13 +307,17 @@ function RobotSvg({
       role="img"
       aria-hidden="true"
     >
-      {/* Antenna */}
+
+      {/* =====================================================
+          ANTENNA
+          ===================================================== */}
+
       <line
         x1="33"
         y1="14"
         x2="33"
         y2="4"
-        stroke="var(--muted-foreground)"
+        stroke="#8B6F5C"
         strokeWidth="2"
         strokeLinecap="round"
       />
@@ -317,7 +326,7 @@ function RobotSvg({
         cx="33"
         cy="4"
         r="3.4"
-        fill="var(--primary)"
+        fill="#C66A45"
         style={
           excited || pointing
             ? {
@@ -328,19 +337,27 @@ function RobotSvg({
         }
       />
 
-      {/* Left arm */}
+
+      {/* =====================================================
+          LEFT ARM
+          ===================================================== */}
+
       <rect
         x="2"
         y="40"
         width="8"
         height="16"
         rx="4"
-        fill="#e9edf5"
-        stroke="var(--border)"
+        fill="#D8C2AE"
+        stroke="#5A3A2A"
         strokeWidth="1"
       />
 
-      {/* Right arm */}
+
+      {/* =====================================================
+          RIGHT ARM
+          ===================================================== */}
+
       <g
         style={{
           transformOrigin:
@@ -359,44 +376,88 @@ function RobotSvg({
           width="8"
           height="16"
           rx="4"
-          fill="#e9edf5"
-          stroke="var(--border)"
+          fill="#D8C2AE"
+          stroke="#5A3A2A"
           strokeWidth="1"
         />
       </g>
 
-      {/* Body */}
+
+      {/* =====================================================
+          BODY
+          ===================================================== */}
+
       <rect
         x="9"
         y="15"
         width="48"
         height="46"
         rx="18"
-        fill="#fbfcfe"
-        stroke="var(--border)"
+        fill="#E6D3C0"
+        stroke="#5A3A2A"
         strokeWidth="1.5"
       />
 
-      {/* Chest light */}
+
+      {/* =====================================================
+          SUBTLE BODY HIGHLIGHT
+          ===================================================== */}
+
+      <path
+        d="M20 19 C25 16 41 16 47 20"
+        stroke="#F3E5D6"
+        strokeWidth="2"
+        strokeLinecap="round"
+        opacity="0.55"
+      />
+
+
+      {/* =====================================================
+          CHEST LIGHT
+          ===================================================== */}
+
       <circle
         cx="33"
         cy="52"
         r="2.4"
-        fill="var(--primary)"
-        opacity="0.85"
+        fill="#D89A5B"
+        opacity="0.95"
       />
 
-      {/* Face */}
+
+      {/* =====================================================
+          FACE
+          ===================================================== */}
+
       <rect
         x="15"
         y="22"
         width="36"
         height="24"
         rx="12"
-        fill="var(--navy)"
+        fill="#2A1A14"
       />
 
-      {/* Eyes */}
+
+      {/* =====================================================
+          FACE INNER GLOW
+          ===================================================== */}
+
+      <rect
+        x="17"
+        y="24"
+        width="32"
+        height="20"
+        rx="10"
+        fill="#21140F"
+        opacity="0.75"
+      />
+
+
+      {/* =====================================================
+          EYES
+          ===================================================== */}
+
       <g
         style={
           eyeAnim
@@ -409,6 +470,8 @@ function RobotSvg({
             : undefined
         }
       >
+
+        {/* WORRIED */}
         {worried ? (
           <>
             <rect
@@ -417,7 +480,7 @@ function RobotSvg({
               width="8"
               height="4.4"
               rx="2.2"
-              fill="#7fd3ff"
+              fill="#D89A5B"
               transform="rotate(14 26 32)"
             />
 
@@ -427,15 +490,20 @@ function RobotSvg({
               width="8"
               height="4.4"
               rx="2.2"
-              fill="#7fd3ff"
+              fill="#D89A5B"
               transform="rotate(-14 40 32)"
             />
           </>
         ) : excited ? (
+
+          /* =================================================
+             EXCITED EYES
+             ================================================= */
+
           <>
             <path
               d="M22 34 L26 29 L30 34"
-              stroke="#7fd3ff"
+              stroke="#D89A5B"
               strokeWidth="2.6"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -444,55 +512,66 @@ function RobotSvg({
 
             <path
               d="M36 34 L40 29 L44 34"
-              stroke="#7fd3ff"
+              stroke="#D89A5B"
               strokeWidth="2.6"
               strokeLinecap="round"
               strokeLinejoin="round"
               fill="none"
             />
           </>
+
         ) : (
+
+          /* =================================================
+             NORMAL EYES
+             ================================================= */
+
           <>
             <circle
               cx={26 + pupilShift}
               cy="33"
               r="3.6"
-              fill="#7fd3ff"
+              fill="#D89A5B"
             />
 
             <circle
               cx={40 + pupilShift}
               cy="33"
               r="3.6"
-              fill="#7fd3ff"
+              fill="#D89A5B"
             />
 
+            {/* Eye highlights */}
             <circle
               cx={24.6 + pupilShift}
               cy="31.6"
               r="1"
-              fill="#ffffff"
+              fill="#FFF1DF"
             />
 
             <circle
               cx={38.6 + pupilShift}
               cy="31.6"
               r="1"
-              fill="#ffffff"
+              fill="#FFF1DF"
             />
           </>
         )}
       </g>
 
-      {/* Feet */}
+
+      {/* =====================================================
+          FEET
+          ===================================================== */}
+
       <rect
         x="18"
         y="60"
         width="12"
         height="8"
         rx="4"
-        fill="#e9edf5"
-        stroke="var(--border)"
+        fill="#D8C2AE"
+        stroke="#5A3A2A"
         strokeWidth="1"
       />
 
@@ -502,10 +581,11 @@ function RobotSvg({
         width="12"
         height="8"
         rx="4"
-        fill="#e9edf5"
-        stroke="var(--border)"
+        fill="#D8C2AE"
+        stroke="#5A3A2A"
         strokeWidth="1"
       />
+
     </svg>
   )
 }

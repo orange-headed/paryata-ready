@@ -1,8 +1,22 @@
 import { cn } from '@/lib/utils'
-import type { CrowdLevel } from '@/lib/types'
-import { Gem, HandHeart, Leaf, Sparkles, Users } from 'lucide-react'
+import {
+  Gem,
+  HandHeart,
+  Leaf,
+  Sparkles,
+  Users,
+} from 'lucide-react'
 
-export function HiddenGemBadge({ className }: { className?: string }) {
+
+/* =========================================================
+   HIDDEN GEM BADGE
+   ========================================================= */
+
+export function HiddenGemBadge({
+  className,
+}: {
+  className?: string
+}) {
   return (
     <span
       className={cn(
@@ -16,11 +30,16 @@ export function HiddenGemBadge({ className }: { className?: string }) {
   )
 }
 
+
+/* =========================================================
+   CROWD BADGE
+   ========================================================= */
+
 export function CrowdBadge({
   level,
   className,
 }: {
-  level: CrowdLevel
+  level: string
   className?: string
 }) {
   return (
@@ -35,6 +54,11 @@ export function CrowdBadge({
     </span>
   )
 }
+
+
+/* =========================================================
+   IMPACT CHIP
+   ========================================================= */
 
 export function ImpactChip({
   label,
@@ -56,13 +80,37 @@ export function ImpactChip({
   )
 }
 
-export function TagPill({ label }: { label: string }) {
+
+/* =========================================================
+   TAG PILL
+   ========================================================= */
+
+export function TagPill({
+  label,
+}: {
+  label: string
+}) {
   return (
-    <span className="rounded-full bg-muted px-2.5 py-1 text-[0.68rem] font-medium text-muted-foreground">
+    <span
+      className="
+        rounded-full
+        bg-muted
+        px-2.5
+        py-1
+        text-[0.68rem]
+        font-medium
+        text-muted-foreground
+      "
+    >
       {label}
     </span>
   )
 }
+
+
+/* =========================================================
+   FEATURE CHIP
+   ========================================================= */
 
 const featureIcon = {
   'Local Experience': Sparkles,
@@ -70,14 +118,29 @@ const featureIcon = {
   'Low Crowd': Users,
 } as const
 
+
 export function FeatureChip({
   label,
 }: {
   label: keyof typeof featureIcon
 }) {
   const Icon = featureIcon[label]
+
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1.5 text-[0.72rem] font-semibold text-accent-foreground">
+    <span
+      className="
+        inline-flex
+        items-center
+        gap-1.5
+        rounded-full
+        bg-accent
+        px-3
+        py-1.5
+        text-[0.72rem]
+        font-semibold
+        text-accent-foreground
+      "
+    >
       <Icon className="size-3.5" />
       {label}
     </span>
