@@ -200,7 +200,7 @@ export function RoboBuddy() {
   }
 
   return (
-    <div className="pointer-events-none fixed bottom-24 left-1/2 z-40 w-full max-w-md -translate-x-1/2 px-4">
+    <div className="pointer-events-none fixed bottom-24 left-1/2 z-[9999] w-full max-w-md -translate-x-1/2 px-4">
       <div className="pointer-events-auto flex items-end justify-end gap-2">
         {isSpeaking && (
           <div className="animate-bubble-in relative mb-2 max-w-[15rem] rounded-2xl rounded-br-sm bg-navy px-4 py-3 text-navy-foreground shadow-xl">

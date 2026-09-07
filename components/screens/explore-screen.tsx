@@ -16,7 +16,6 @@ import { useApp } from '@/lib/app-context'
 
 import {
   CURRENT_LOCATION,
-  destinations,
   getRecommendedDestinations,
   nearYou,
 } from '@/lib/data'
@@ -57,6 +56,7 @@ export function ExploreScreen() {
     sayRobo,
     setScreen,
     travelPreferences,
+    travelDNAProgress,
   } = useApp()
 
   const [
@@ -161,9 +161,7 @@ export function ExploreScreen() {
   return (
     <div className="animate-screen-in space-y-7 pb-4">
 
-      {/* ========================================
-          HEADER
-      ======================================== */}
+      {/* HEADER */}
 
       <header className="flex items-start justify-between px-5 pt-5">
 
@@ -178,11 +176,8 @@ export function ExploreScreen() {
           </h1>
 
           <p className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
-
             <MapPin className="size-3.5" />
-
             Near {CURRENT_LOCATION.city}
-
           </p>
 
         </div>
@@ -197,16 +192,12 @@ export function ExploreScreen() {
           aria-label="Paryata notifications"
           className="grid size-10 place-items-center rounded-full bg-card text-foreground shadow-sm ring-1 ring-border/60"
         >
-
           <Bell className="size-4" />
-
         </button>
 
       </header>
 
-      {/* ========================================
-          SEARCH
-      ======================================== */}
+      {/* SEARCH */}
 
       <div className="px-5">
 
@@ -241,9 +232,7 @@ export function ExploreScreen() {
 
       </div>
 
-      {/* ========================================
-          PERSONALIZED MATCH
-      ======================================== */}
+      {/* PERSONALIZED MATCH */}
 
       {!normalized &&
         topRecommendation && (
@@ -291,16 +280,18 @@ export function ExploreScreen() {
 
               <div className="mt-4 grid grid-cols-3 gap-2">
 
+                {/* LIVE DNA LEARNING */}
+
                 <div className="rounded-2xl bg-white/10 p-3">
 
                   <Dna className="mb-2 size-4 text-primary" />
 
                   <p className="text-[0.65rem] text-navy-foreground/60">
-                    DNA
+                    DNA learned
                   </p>
 
                   <p className="mt-0.5 text-sm font-bold">
-                    {topRecommendation.dnaMatch}%
+                    {travelDNAProgress}%
                   </p>
 
                 </div>
@@ -358,9 +349,7 @@ export function ExploreScreen() {
           </section>
         )}
 
-      {/* ========================================
-          MAP
-      ======================================== */}
+      {/* MAP */}
 
       <section className="px-5">
 
@@ -384,9 +373,7 @@ export function ExploreScreen() {
 
       </section>
 
-      {/* ========================================
-          NEAR YOU
-      ======================================== */}
+      {/* NEAR YOU */}
 
       {!normalized &&
         filteredNear.length > 0 && (
@@ -428,9 +415,7 @@ export function ExploreScreen() {
           </section>
         )}
 
-      {/* ========================================
-          PERSONALIZED DISCOVERY
-      ======================================== */}
+      {/* PERSONALIZED DISCOVERY */}
 
       <section className="space-y-4 px-5">
 
@@ -485,8 +470,6 @@ export function ExploreScreen() {
                   className="relative"
                 >
 
-                  {/* Ranking badge */}
-
                   <div className="absolute left-3 top-3 z-10 flex items-center gap-1.5 rounded-full bg-navy px-3 py-1 text-[0.65rem] font-bold text-navy-foreground shadow-md">
 
                     <Sparkles className="size-3 text-primary" />
@@ -511,9 +494,7 @@ export function ExploreScreen() {
 
       </section>
 
-      {/* ========================================
-          WHY PARYATA
-      ======================================== */}
+      {/* WHY PARYATA */}
 
       {!normalized && (
         <section className="px-5">

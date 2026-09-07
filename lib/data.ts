@@ -706,15 +706,16 @@ export const roboMessages = [
 // INITIAL TRAVEL DNA
 // ==================================================
 
+
 export const initialTravelPreferences: TravelPreferences = {
-  nature: 50,
-  peace: 50,
-  rural: 50,
-  culture: 50,
-  food: 50,
-  adventure: 50,
-  beaches: 50,
-  arts: 50,
+  nature: 0,
+  peace: 0,
+  rural: 0,
+  culture: 0,
+  food: 0,
+  adventure: 0,
+  beaches: 0,
+  arts: 0,
 }
 
 // ==================================================
@@ -766,8 +767,10 @@ function calculateDNAMatch(
     totalWeight += weight
   }
 
+  // No learning data yet.
+  // Travel DNA genuinely starts at 0.
   if (totalWeight === 0) {
-    return 50
+    return 0
   }
 
   return (

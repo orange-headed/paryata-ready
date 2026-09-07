@@ -49,6 +49,9 @@ interface AppState {
     amount: number,
   ) => void
 
+  // Overall learning progress.
+  travelDNAProgress: number
+
   roboState: RoboState
   setRoboState: (state: RoboState) => void
 
@@ -64,6 +67,11 @@ interface AppState {
 
 const AppContext =
   createContext<AppState | null>(null)
+
+// Increase this whenever the initial DNA system changes.
+// This makes sure old 50% LocalStorage data does not
+// continue appearing in the prototype.
+const DNA_VERSION = '2'
 
 export function AppProvider({
   children,
@@ -100,6 +108,30 @@ export function AppProvider({
     useState<string | null>(null)
 
   // ================================================
+  // TRAVEL DNA LEARNING PROGRESS
+  // ================================================
+  //
+  // Every saved place is a learning signal.
+  //
+  // 0 saved  = 0%
+  // 1 saved  = 20%
+  // 2 saved  = 40%
+  // 3 saved  = 60%
+  // 4 saved  = 80%
+  // 5+ saved = 100%
+  //
+  // This is separate from individual DNA traits.
+  // The traits tell us WHAT the user likes.
+  // This tells us HOW MUCH PARYATA has learned.
+  //
+
+  const travelDNAProgress =
+    Math.min(
+      savedIds.length * 20,
+      100,
+    )
+
+  // ================================================
   // PARYATA BUDDY
   // ================================================
 
@@ -126,53 +158,108 @@ export function AppProvider({
 
   useEffect(() => {
     try {
-      const saved =
+      const storedVersion =
         window.localStorage.getItem(
+          'paryata-dna-version',
+        )
+
+      // --------------------------------------------
+      // ONE-TIME RESET
+      // --------------------------------------------
+      //
+      // Previous prototype versions started DNA at 50.
+      // Remove that old data once so the new prototype
+      // genuinely starts from zero.
+      //
+
+      if (
+        storedVersion !== DNA_VERSION
+      ) {
+        window.localStorage.removeItem(
           'paryata-saved',
         )
 
-      if (saved) {
-        const parsed =
-          JSON.parse(saved)
-
-        if (Array.isArray(parsed)) {
-          setSavedIds(parsed)
-        }
-      }
-
-      const savedJourney =
-        window.localStorage.getItem(
-          'paryata-journey',
-        )
-
-      if (savedJourney) {
-        const parsed =
-          JSON.parse(savedJourney)
-
-        if (Array.isArray(parsed)) {
-          setJourney(parsed)
-        }
-      }
-
-      const savedDNA =
-        window.localStorage.getItem(
+        window.localStorage.removeItem(
           'paryata-travel-dna',
         )
 
-      if (savedDNA) {
-        const parsed =
-          JSON.parse(savedDNA)
+        window.localStorage.setItem(
+          'paryata-dna-version',
+          DNA_VERSION,
+        )
 
-        if (
-          parsed &&
-          typeof parsed === 'object'
-        ) {
-          setTravelPreferences({
-            ...initialTravelPreferences,
-            ...parsed,
-          })
+        setSavedIds([])
+        setTravelPreferences(
+          initialTravelPreferences,
+        )
+      } else {
+        // ------------------------------------------
+        // LOAD SAVED PLACES
+        // ------------------------------------------
+
+        const saved =
+          window.localStorage.getItem(
+            'paryata-saved',
+          )
+
+        if (saved) {
+          const parsed =
+            JSON.parse(saved)
+
+          if (Array.isArray(parsed)) {
+            setSavedIds(parsed)
+          }
+        }
+
+        // ------------------------------------------
+        // LOAD JOURNEY
+        // ------------------------------------------
+
+        const savedJourney =
+          window.localStorage.getItem(
+            'paryata-journey',
+          )
+
+        if (savedJourney) {
+          const parsed =
+            JSON.parse(savedJourney)
+
+          if (Array.isArray(parsed)) {
+            setJourney(parsed)
+          }
+        }
+
+        // ------------------------------------------
+        // LOAD TRAVEL DNA
+        // ------------------------------------------
+
+        const savedDNA =
+          window.localStorage.getItem(
+            'paryata-travel-dna',
+          )
+
+        if (savedDNA) {
+          const parsed =
+            JSON.parse(savedDNA)
+
+          if (
+            parsed &&
+            typeof parsed === 'object'
+          ) {
+            setTravelPreferences({
+              ...initialTravelPreferences,
+              ...parsed,
+            })
+          }
         }
       }
+
+      // Make sure the version exists even
+      // when the data was already current.
+      window.localStorage.setItem(
+        'paryata-dna-version',
+        DNA_VERSION,
+      )
     } catch {
       // Keep default values if localStorage is invalid.
     }
@@ -457,6 +544,8 @@ export function AppProvider({
         setTravelPreferences,
         updateTravelDNA,
 
+        travelDNAProgress,
+
         roboState,
         setRoboState,
 
@@ -482,6 +571,8 @@ export function AppProvider({
         travelPreferences,
         setTravelPreferences,
         updateTravelDNA,
+
+        travelDNAProgress,
 
         roboState,
         roboMessage,

@@ -110,7 +110,9 @@ export function BottomNav() {
   return (
     <nav
       className={cn(
-        'fixed inset-x-0 bottom-0 z-50',
+        // IMPORTANT:
+        // Keep the navigation above Leaflet and Robo Buddy.
+        'fixed inset-x-0 bottom-0 z-[10000]',
         'transition-transform duration-300 ease-out',
         visible
           ? 'translate-y-0'
