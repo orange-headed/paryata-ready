@@ -1,10 +1,18 @@
 'use client'
 
 import { useApp } from '@/lib/app-context'
-import { roboMessages } from '@/lib/data'
+import {
+  destinations,
+  getRecommendedDestinations,
+  roboMessages,
+} from '@/lib/data'
 import type { RoboState } from '@/lib/types'
 import { Sparkles, X } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 
 function bodyAnimation(state: RoboState): string {
   switch (state) {
@@ -49,6 +57,12 @@ function eyeAnimation(
   }
 }
 
+type Intent =
+  | 'nature'
+  | 'food'
+  | 'culture'
+  | 'surprise'
+
 export function RoboBuddy() {
   const {
     roboState,
@@ -56,21 +70,66 @@ export function RoboBuddy() {
     sayRobo,
     clearRobo,
     setRoboState,
+    travelPreferences,
+    openDestination,
   } = useApp()
 
-  const [msgIndex, setMsgIndex] = useState(0)
+  const [conversationOpen, setConversationOpen] =
+    useState(false)
 
-  const greeted = useRef(false)
+  const [conversationStep, setConversationStep] =
+    useState<'idle' | 'intent'>('idle')
+
+  const [selectedIntent, setSelectedIntent] =
+    useState<Intent | null>(null)
+
+  const [recommendedId, setRecommendedId] =
+    useState<string | null>(null)
 
   /*
-   * First-time introduction.
-   *
-   * Paryata notices the traveller,
-   * thinks for a moment,
-   * gets excited,
-   * points,
-   * then speaks.
+   * =========================================================
+   * DRAG STATE
+   * =========================================================
    */
+
+  const [isDragging, setIsDragging] =
+    useState(false)
+
+  /*
+   * x/y represent the position of the
+   * ENTIRE Robo group relative to its
+   * starting center position.
+   */
+
+  const [position, setPosition] =
+    useState({
+      x: 0,
+      y: 0,
+    })
+
+  const [rotation, setRotation] =
+    useState(0)
+
+  const dragStart =
+    useRef({
+      x: 0,
+      y: 0,
+      startX: 0,
+      startY: 0,
+    })
+
+  const hasDragged =
+    useRef(false)
+
+  const greeted =
+    useRef(false)
+
+  /*
+   * =========================================================
+   * FIRST-TIME INTRODUCTION
+   * =========================================================
+   */
+
   useEffect(() => {
     if (greeted.current) return
 
@@ -119,9 +178,11 @@ export function RoboBuddy() {
   ])
 
   /*
-   * After getting excited,
-   * transition naturally into speaking.
+   * =========================================================
+   * EXCITED → SPEAKING
+   * =========================================================
    */
+
   useEffect(() => {
     if (roboState !== 'excited') {
       return
@@ -129,7 +190,8 @@ export function RoboBuddy() {
 
     const timer =
       window.setTimeout(
-        () => setRoboState('speaking'),
+        () =>
+          setRoboState('speaking'),
         900,
       )
 
@@ -150,107 +212,634 @@ export function RoboBuddy() {
     roboState === 'listening'
 
   /*
-   * Tapping Paryata cycles through
-   * its messages and creates a small
-   * attention sequence.
+   * =========================================================
+   * OPEN CONVERSATION
+   * =========================================================
    */
-  const handleTap = () => {
-    const nextIndex =
-      isSpeaking
-        ? (msgIndex + 1) %
-          Math.max(
-            roboMessages.length,
-            1,
-          )
-        : msgIndex
 
-    setMsgIndex(nextIndex)
+  const openConversation = () => {
+    setConversationOpen(true)
+    setConversationStep('intent')
+    setSelectedIntent(null)
+    setRecommendedId(null)
+
+    clearRobo()
 
     setRoboState('listening')
-
-    window.setTimeout(
-      () =>
-        setRoboState(
-          'thinking',
-        ),
-      260,
-    )
-
-    window.setTimeout(
-      () =>
-        setRoboState(
-          nextIndex % 2 === 0
-            ? 'excited'
-            : 'pointing',
-        ),
-      620,
-    )
-
-    window.setTimeout(
-      () =>
-        sayRobo(
-          roboMessages[
-            nextIndex
-          ] ??
-            'I am keeping an eye out for places that match your travel style.',
-          'speaking',
-        ),
-      950,
-    )
   }
 
-  return (
-    <div className="pointer-events-none fixed bottom-24 left-1/2 z-[9999] w-full max-w-md -translate-x-1/2 px-4">
-      <div className="pointer-events-auto flex items-end justify-end gap-2">
-        {isSpeaking && (
-          <div className="animate-bubble-in relative mb-2 max-w-[15rem] rounded-2xl rounded-br-sm bg-navy px-4 py-3 text-navy-foreground shadow-xl">
-            <div className="mb-1 flex items-center gap-1.5">
-              <Sparkles className="size-3.5 text-primary" />
+  /*
+   * =========================================================
+   * RECOMMENDATION
+   * =========================================================
+   */
 
-              <span className="text-[0.65rem] font-semibold uppercase tracking-wide text-primary">
-                Paryata Buddy
-              </span>
+  const chooseIntent = (
+    intent: Intent,
+  ) => {
+    setSelectedIntent(intent)
+    setConversationStep('idle')
+    setRoboState('thinking')
+
+    const recommended =
+      getRecommendedDestinations(
+        travelPreferences,
+      )
+
+    let destination =
+      recommended[0]?.destination
+
+    if (
+      intent !== 'surprise'
+    ) {
+      const sortedByIntent =
+        [...destinations].sort(
+          (a, b) => {
+            const category =
+              intent === 'nature'
+                ? 'nature'
+                : intent === 'food'
+                  ? 'food'
+                  : 'culture'
+
+            const aValue =
+              a.dnaWeights[category]
+
+            const bValue =
+              b.dnaWeights[category]
+
+            return bValue - aValue
+          },
+        )
+
+      destination =
+        sortedByIntent[0] ??
+        destination
+    }
+
+    if (!destination) {
+      setRoboState('concerned')
+
+      sayRobo(
+        'Hmm... I could not find the right match yet. Try exploring a few places first!',
+        'concerned',
+      )
+
+      return
+    }
+
+    setRecommendedId(
+      destination.id,
+    )
+
+    window.setTimeout(() => {
+      setRoboState('excited')
+
+      const intentText =
+        intent === 'nature'
+          ? 'nature'
+          : intent === 'food'
+            ? 'food'
+            : intent === 'culture'
+              ? 'culture'
+              : 'something unexpected'
+
+      sayRobo(
+        `Ooooh 👀 I think ${destination.name} could be your kind of place. You said ${intentText}, and this one looks like a great match!`,
+        'speaking',
+      )
+    }, 700)
+  }
+
+  /*
+   * =========================================================
+   * OPEN RECOMMENDATION
+   * =========================================================
+   */
+
+  const exploreRecommendation =
+    () => {
+      if (!recommendedId) {
+        return
+      }
+
+      openDestination(
+        recommendedId,
+      )
+
+      setConversationOpen(false)
+      setRecommendedId(null)
+      setSelectedIntent(null)
+    }
+
+  /*
+   * =========================================================
+   * NORMAL TAP
+   * =========================================================
+   */
+
+  const handleTap = () => {
+    if (hasDragged.current) {
+      hasDragged.current = false
+      return
+    }
+
+    if (conversationOpen) {
+      return
+    }
+
+    openConversation()
+  }
+
+  /*
+   * =========================================================
+   * DRAG START
+   * =========================================================
+   */
+
+  const handlePointerDown = (
+    event: React.PointerEvent,
+  ) => {
+    if (!event.isPrimary) {
+      return
+    }
+
+    event.currentTarget.setPointerCapture(
+      event.pointerId,
+    )
+
+    dragStart.current = {
+      x: position.x,
+      y: position.y,
+      startX: event.clientX,
+      startY: event.clientY,
+    }
+
+    hasDragged.current = false
+
+    setIsDragging(true)
+
+    setRoboState('excited')
+  }
+
+  /*
+   * =========================================================
+   * DRAG MOVE
+   * =========================================================
+   */
+
+  const handlePointerMove = (
+    event: React.PointerEvent,
+  ) => {
+    if (!isDragging) {
+      return
+    }
+
+    const deltaX =
+      event.clientX -
+      dragStart.current.startX
+
+    const deltaY =
+      event.clientY -
+      dragStart.current.startY
+
+    if (
+      Math.abs(deltaX) > 4 ||
+      Math.abs(deltaY) > 4
+    ) {
+      hasDragged.current = true
+    }
+
+    /*
+     * =====================================================
+     * VIEWPORT BOUNDS
+     * =====================================================
+     *
+     * The Robo starts around the horizontal center.
+     *
+     * We calculate the available space dynamically
+     * from the actual browser viewport instead of
+     * using the old hard-coded ±145px limit.
+     */
+
+    const viewportWidth =
+      window.innerWidth
+
+    const viewportHeight =
+      window.innerHeight
+
+    /*
+     * Keep some breathing room around
+     * the edges.
+     */
+
+    const horizontalMargin = 30
+
+    /*
+     * Robo is roughly 66px wide.
+     * The conversation bubble is wider,
+     * but it naturally extends inward
+     * from the Robo.
+     */
+
+    const robotHalfWidth = 40
+
+    const maxHorizontal =
+      Math.max(
+        80,
+        viewportWidth / 2 -
+          horizontalMargin -
+          robotHalfWidth,
+      )
+
+    /*
+     * Vertical movement:
+     *
+     * Negative = upward
+     * Positive = downward
+     *
+     * We leave room for the bottom navigation.
+     */
+
+    const topMargin = 20
+
+    const bottomNavigationSpace = 105
+
+    const robotHeight = 90
+
+    const maxUp =
+      Math.max(
+        120,
+        viewportHeight -
+          topMargin -
+          robotHeight -
+          bottomNavigationSpace,
+      )
+
+    /*
+     * Because the initial position is
+     * near the bottom-center:
+     *
+     * - allow a large negative Y
+     * - allow only enough positive Y
+     *   to keep Robo above the nav
+     */
+
+    const minY =
+      -maxUp
+
+    const maxY =
+      35
+
+    const nextX =
+      Math.max(
+        -maxHorizontal,
+        Math.min(
+          maxHorizontal,
+          dragStart.current.x +
+            deltaX,
+        ),
+      )
+
+    const nextY =
+      Math.max(
+        minY,
+        Math.min(
+          maxY,
+          dragStart.current.y +
+            deltaY,
+        ),
+      )
+
+    setPosition({
+      x: nextX,
+      y: nextY,
+    })
+
+    /*
+     * =====================================================
+     * LITTLE DRAG TILT
+     * =====================================================
+     */
+
+    const tilt = Math.max(
+      -16,
+      Math.min(
+        16,
+        deltaX * 0.12,
+      ),
+    )
+
+    setRotation(tilt)
+  }
+
+  /*
+   * =========================================================
+   * DRAG END
+   * =========================================================
+   */
+
+  const handlePointerUp = (
+    event: React.PointerEvent,
+  ) => {
+    if (!isDragging) {
+      return
+    }
+
+    try {
+      event.currentTarget.releasePointerCapture(
+        event.pointerId,
+      )
+    } catch {
+      // Pointer capture may already be released.
+    }
+
+    setIsDragging(false)
+
+    setRotation(
+      rotation > 0
+        ? 4
+        : rotation < 0
+          ? -4
+          : 0,
+    )
+
+    window.setTimeout(() => {
+      setRotation(0)
+    }, 180)
+
+    if (hasDragged.current) {
+      setRoboState('happy')
+    }
+  }
+
+  /*
+   * =========================================================
+   * GROUP TRANSFORM
+   * =========================================================
+   *
+   * IMPORTANT:
+   *
+   * The speech bubble AND robot are now
+   * inside this same transformed container.
+   *
+   * Therefore they always move together.
+   */
+
+  const groupTransform = `
+    translate3d(
+      ${position.x}px,
+      ${position.y}px,
+      0
+    )
+    rotate(${rotation}deg)
+    ${isDragging ? 'scale(1.04)' : 'scale(1)'}
+  `
+
+  /*
+   * =========================================================
+   * RENDER
+   * =========================================================
+   */
+
+  return (
+    <div
+      className="pointer-events-none fixed inset-x-0 bottom-24 z-[9999] flex justify-center px-4"
+    >
+
+      <div
+        className="pointer-events-none relative flex w-full max-w-md items-end justify-end"
+        style={{
+          transform:
+            groupTransform,
+
+          transition: isDragging
+            ? 'none'
+            : 'transform 180ms cubic-bezier(0.22, 1, 0.36, 1)',
+
+          transformOrigin:
+            'bottom center',
+        }}
+      >
+
+        {/* =====================================================
+            CONVERSATION / SPEECH BUBBLE
+            ===================================================== */}
+
+        {conversationOpen &&
+          !isDragging && (
+            <div className="pointer-events-auto animate-bubble-in relative mb-2 mr-2 w-[17rem] rounded-2xl rounded-br-sm bg-navy px-4 py-3 text-navy-foreground shadow-xl">
+
+              <div className="mb-2 flex items-center gap-1.5">
+
+                <Sparkles className="size-3.5 text-primary" />
+
+                <span className="text-[0.65rem] font-semibold uppercase tracking-wide text-primary">
+                  Paryata Buddy
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConversationOpen(false)
+                    setSelectedIntent(null)
+                    setRecommendedId(null)
+                    clearRobo()
+                  }}
+                  aria-label="Close assistant"
+                  className="ml-auto -mr-1 rounded-full p-0.5 text-navy-foreground/60 transition-colors hover:text-navy-foreground"
+                >
+                  <X className="size-3.5" />
+                </button>
+
+              </div>
+
+
+              {conversationStep ===
+                'intent' ? (
+                <>
+                  <p className="text-pretty text-[0.8rem] leading-snug">
+                    What are you in the mood for? 👀
+                  </p>
+
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+
+                    <QuickReply
+                      label="🌿 Nature"
+                      onClick={() =>
+                        chooseIntent(
+                          'nature',
+                        )
+                      }
+                    />
+
+                    <QuickReply
+                      label="🍛 Food"
+                      onClick={() =>
+                        chooseIntent(
+                          'food',
+                        )
+                      }
+                    />
+
+                    <QuickReply
+                      label="🏛️ Culture"
+                      onClick={() =>
+                        chooseIntent(
+                          'culture',
+                        )
+                      }
+                    />
+
+                    <QuickReply
+                      label="🎲 Surprise me"
+                      onClick={() =>
+                        chooseIntent(
+                          'surprise',
+                        )
+                      }
+                    />
+
+                  </div>
+                </>
+              ) : recommendedId ? (
+                <>
+                  <p className="text-pretty text-[0.8rem] leading-snug">
+                    I've got a place in mind for you. Want to see it? ✨
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={
+                      exploreRecommendation
+                    }
+                    className="mt-3 w-full rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    Explore recommendation →
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setConversationStep(
+                        'intent',
+                      )
+                    }
+                    className="mt-2 w-full text-[0.7rem] font-semibold text-navy-foreground/60 hover:text-navy-foreground"
+                  >
+                    Choose something else
+                  </button>
+                </>
+              ) : (
+                <p className="text-[0.8rem] leading-snug">
+                  Give me a second... I'm thinking 🤔
+                </p>
+              )}
+
+
+              <span className="absolute -bottom-1 right-4 size-3 rotate-45 bg-navy" />
+
+            </div>
+          )}
+
+
+        {/* =====================================================
+            NORMAL ROBO MESSAGE
+            ===================================================== */}
+
+        {isSpeaking &&
+          !conversationOpen &&
+          !isDragging && (
+            <div className="pointer-events-auto animate-bubble-in relative mb-2 mr-2 max-w-[15rem] rounded-2xl rounded-br-sm bg-navy px-4 py-3 text-navy-foreground shadow-xl">
+
+              <div className="mb-1 flex items-center gap-1.5">
+
+                <Sparkles className="size-3.5 text-primary" />
+
+                <span className="text-[0.65rem] font-semibold uppercase tracking-wide text-primary">
+                  Paryata Buddy
+                </span>
+
+                <button
+                  type="button"
+                  onClick={clearRobo}
+                  aria-label="Dismiss message"
+                  className="ml-auto -mr-1 rounded-full p-0.5 text-navy-foreground/60 transition-colors hover:text-navy-foreground"
+                >
+                  <X className="size-3.5" />
+                </button>
+
+              </div>
+
+
+              <p className="text-pretty text-[0.8rem] leading-snug">
+                {roboMessage}
+              </p>
+
 
               <button
-                onClick={clearRobo}
-                aria-label="Dismiss message"
-                className="ml-auto -mr-1 rounded-full p-0.5 text-navy-foreground/60 transition-colors hover:text-navy-foreground"
+                type="button"
+                onClick={
+                  openConversation
+                }
+                className="mt-2 text-[0.7rem] font-semibold text-primary underline-offset-2 hover:underline"
               >
-                <X className="size-3.5" />
+                Let's plan a trip →
               </button>
+
+
+              <span className="absolute -bottom-1 right-4 size-3 rotate-45 bg-navy" />
+
             </div>
+          )}
 
-            <p className="text-pretty text-[0.8rem] leading-snug">
-              {roboMessage}
-            </p>
 
-            <button
-              onClick={handleTap}
-              className="mt-2 text-[0.7rem] font-semibold text-primary underline-offset-2 hover:underline"
-            >
-              Tell me more
-            </button>
-
-            <span className="absolute -bottom-1 right-4 size-3 rotate-45 bg-navy" />
-          </div>
-        )}
+        {/* =====================================================
+            ROBOT
+            ===================================================== */}
 
         <button
+          type="button"
           onClick={handleTap}
+          onPointerDown={
+            handlePointerDown
+          }
+          onPointerMove={
+            handlePointerMove
+          }
+          onPointerUp={
+            handlePointerUp
+          }
+          onPointerCancel={
+            handlePointerUp
+          }
           aria-label="Open Paryata Buddy assistant"
-          className="group relative outline-none"
+          className="pointer-events-auto group relative touch-none select-none outline-none"
+          style={{
+            cursor: isDragging
+              ? 'grabbing'
+              : 'grab',
+          }}
         >
+
           <div
-            className="relative"
+            className={
+              isDragging
+                ? 'robo-dragging'
+                : ''
+            }
             style={{
-              animation:
-                bodyAnimation(
-                  roboState,
-                ),
+              animation: isDragging
+                ? 'robo-drag-wiggle 0.35s ease-in-out infinite'
+                : bodyAnimation(
+                    roboState,
+                  ),
+
               transformOrigin:
                 'bottom center',
             }}
           >
+
             <RobotSvg
               looking={looking}
               worried={worried}
@@ -266,13 +855,63 @@ export function RoboBuddy() {
                 roboState,
               )}
             />
+
           </div>
 
-          {/* Warm shadow under Paryata */}
-          <span className="absolute -bottom-1 left-1/2 h-1.5 w-10 -translate-x-1/2 rounded-full bg-black/40 blur-[2px]" />
+
+          {/* =================================================
+              SHADOW
+              ================================================= */}
+
+          <span
+            className="absolute -bottom-1 left-1/2 h-1.5 -translate-x-1/2 rounded-full bg-black/40 blur-[2px]"
+            style={{
+              width: '2.5rem',
+
+              opacity: isDragging
+                ? 0.25
+                : 1,
+
+              transform: `
+                translateX(-50%)
+                scaleX(
+                  ${isDragging ? 0.75 : 1}
+                )
+              `,
+
+              transition:
+                'all 180ms ease',
+            }}
+          />
+
         </button>
+
       </div>
+
     </div>
+  )
+}
+
+
+/* =========================================================
+   QUICK REPLY
+   ========================================================= */
+
+function QuickReply({
+  label,
+  onClick,
+}: {
+  label: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-xl bg-primary/10 px-2 py-2 text-left text-[0.7rem] font-semibold text-primary ring-1 ring-primary/20 transition-all hover:bg-primary/20 active:scale-95"
+    >
+      {label}
+    </button>
   )
 }
 
@@ -308,9 +947,7 @@ function RobotSvg({
       aria-hidden="true"
     >
 
-      {/* =====================================================
-          ANTENNA
-          ===================================================== */}
+      {/* ANTENNA */}
 
       <line
         x1="33"
@@ -338,9 +975,7 @@ function RobotSvg({
       />
 
 
-      {/* =====================================================
-          LEFT ARM
-          ===================================================== */}
+      {/* LEFT ARM */}
 
       <rect
         x="2"
@@ -354,22 +989,23 @@ function RobotSvg({
       />
 
 
-      {/* =====================================================
-          RIGHT ARM
-          ===================================================== */}
+      {/* RIGHT ARM */}
 
       <g
         style={{
           transformOrigin:
             '58px 44px',
+
           transform:
             pointing
               ? 'rotate(-42deg)'
               : 'rotate(0deg)',
+
           transition:
             'transform 0.3s ease',
         }}
       >
+
         <rect
           x="56"
           y="40"
@@ -380,12 +1016,11 @@ function RobotSvg({
           stroke="#5A3A2A"
           strokeWidth="1"
         />
+
       </g>
 
 
-      {/* =====================================================
-          BODY
-          ===================================================== */}
+      {/* BODY */}
 
       <rect
         x="9"
@@ -399,9 +1034,7 @@ function RobotSvg({
       />
 
 
-      {/* =====================================================
-          SUBTLE BODY HIGHLIGHT
-          ===================================================== */}
+      {/* BODY HIGHLIGHT */}
 
       <path
         d="M20 19 C25 16 41 16 47 20"
@@ -412,9 +1045,7 @@ function RobotSvg({
       />
 
 
-      {/* =====================================================
-          CHEST LIGHT
-          ===================================================== */}
+      {/* CHEST LIGHT */}
 
       <circle
         cx="33"
@@ -425,9 +1056,7 @@ function RobotSvg({
       />
 
 
-      {/* =====================================================
-          FACE
-          ===================================================== */}
+      {/* FACE */}
 
       <rect
         x="15"
@@ -437,11 +1066,6 @@ function RobotSvg({
         rx="12"
         fill="#2A1A14"
       />
-
-
-      {/* =====================================================
-          FACE INNER GLOW
-          ===================================================== */}
 
       <rect
         x="17"
@@ -454,9 +1078,7 @@ function RobotSvg({
       />
 
 
-      {/* =====================================================
-          EYES
-          ===================================================== */}
+      {/* EYES */}
 
       <g
         style={
@@ -464,6 +1086,7 @@ function RobotSvg({
             ? {
                 animation:
                   eyeAnim,
+
                 transformOrigin:
                   '33px 33px',
               }
@@ -471,7 +1094,6 @@ function RobotSvg({
         }
       >
 
-        {/* WORRIED */}
         {worried ? (
           <>
             <rect
@@ -495,11 +1117,6 @@ function RobotSvg({
             />
           </>
         ) : excited ? (
-
-          /* =================================================
-             EXCITED EYES
-             ================================================= */
-
           <>
             <path
               d="M22 34 L26 29 L30 34"
@@ -519,13 +1136,7 @@ function RobotSvg({
               fill="none"
             />
           </>
-
         ) : (
-
-          /* =================================================
-             NORMAL EYES
-             ================================================= */
-
           <>
             <circle
               cx={26 + pupilShift}
@@ -541,7 +1152,6 @@ function RobotSvg({
               fill="#D89A5B"
             />
 
-            {/* Eye highlights */}
             <circle
               cx={24.6 + pupilShift}
               cy="31.6"
@@ -557,12 +1167,11 @@ function RobotSvg({
             />
           </>
         )}
+
       </g>
 
 
-      {/* =====================================================
-          FEET
-          ===================================================== */}
+      {/* FEET */}
 
       <rect
         x="18"

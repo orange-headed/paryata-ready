@@ -79,7 +79,7 @@ export function TravelDnaScreen() {
   ]
 
   // ============================================
-  // STRONGEST PREFERENCE LABEL
+  // STRONGEST PREFERENCE
   // ============================================
 
   const preferenceLabels: Record<
@@ -101,10 +101,15 @@ export function TravelDnaScreen() {
       recommendation.strongestMatch
     ]
 
+  const hasLearned =
+    savedIds.length > 0
+
   return (
     <div className="animate-screen-in space-y-7 px-5 py-5 pb-4">
 
-      {/* HEADER */}
+      {/* ============================================
+          HEADER
+          ============================================ */}
 
       <header className="flex items-center gap-3">
 
@@ -128,7 +133,10 @@ export function TravelDnaScreen() {
 
       </header>
 
-      {/* DNA LEARNING PROGRESS */}
+
+      {/* ============================================
+          DNA LEARNING PROGRESS
+          ============================================ */}
 
       <section className="rounded-3xl bg-card p-5 shadow-sm ring-1 ring-border/60">
 
@@ -150,6 +158,7 @@ export function TravelDnaScreen() {
 
         </div>
 
+
         <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-muted">
 
           <div
@@ -160,6 +169,7 @@ export function TravelDnaScreen() {
           />
 
         </div>
+
 
         <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
 
@@ -175,7 +185,54 @@ export function TravelDnaScreen() {
 
       </section>
 
-      {/* ARCHETYPE */}
+
+      {/* ============================================
+          ZERO-STATE MESSAGE
+          ============================================ */}
+
+      {!hasLearned && (
+        <section className="rounded-3xl bg-primary/10 p-5 ring-1 ring-primary/20">
+
+          <div className="flex items-start gap-3">
+
+            <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground">
+
+              <Sparkles className="size-5" />
+
+            </span>
+
+            <div>
+
+              <h3 className="font-display text-base font-bold text-foreground">
+                Your DNA is still forming
+              </h3>
+
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                Save destinations, food and experiences you like.
+                Paryata will use those choices to understand your
+                travel style and improve future recommendations.
+              </p>
+
+              <button
+                type="button"
+                onClick={() => setScreen('explore')}
+                className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-primary"
+              >
+                Start exploring
+                <ArrowRight className="size-3.5" />
+              </button>
+
+            </div>
+
+          </div>
+
+        </section>
+      )}
+
+
+      {/* ============================================
+          ARCHETYPE
+          ============================================ */}
 
       <section className="overflow-hidden rounded-3xl bg-navy p-6 text-navy-foreground">
 
@@ -187,29 +244,59 @@ export function TravelDnaScreen() {
 
         </div>
 
+
         <h2 className="text-balance font-display text-2xl font-extrabold leading-tight">
 
-          You&apos;re a{' '}
+          {hasLearned ? (
+            <>
+              You&apos;re a{' '}
 
-          <span className="text-primary">
-            {travelDna.archetype}.
-          </span>
+              <span className="text-primary">
+                {travelDna.archetype}.
+              </span>
+            </>
+          ) : (
+            <>
+              Your travel style is{' '}
+
+              <span className="text-primary">
+                still forming.
+              </span>
+            </>
+          )}
 
         </h2>
 
+
         <p className="mt-3 text-pretty text-sm leading-relaxed text-navy-foreground/85">
-          {travelDna.blurb}
+
+          {hasLearned
+            ? travelDna.blurb
+            : 'Keep saving places that catch your eye. As Paryata learns more about you, your travel archetype will become more meaningful.'}
+
         </p>
 
       </section>
 
-      {/* LIVE TRAVEL DNA */}
+
+      {/* ============================================
+          LIVE TRAVEL DNA
+          ============================================ */}
 
       <section className="space-y-4">
 
-        <h3 className="font-display text-base font-bold text-foreground">
-          What drives your trips
-        </h3>
+        <div>
+
+          <h3 className="font-display text-base font-bold text-foreground">
+            What drives your trips
+          </h3>
+
+          <p className="mt-1 text-xs text-muted-foreground">
+            These preferences evolve from your choices.
+          </p>
+
+        </div>
+
 
         <div className="space-y-4 rounded-3xl bg-card p-5 shadow-sm ring-1 ring-border/60">
 
@@ -227,6 +314,7 @@ export function TravelDnaScreen() {
                 </span>
 
               </div>
+
 
               <div className="h-2.5 overflow-hidden rounded-full bg-muted">
 
@@ -246,7 +334,10 @@ export function TravelDnaScreen() {
 
       </section>
 
-      {/* PARYATA RECOMMENDATION */}
+
+      {/* ============================================
+          PARYATA RECOMMENDATION
+          ============================================ */}
 
       <section className="overflow-hidden rounded-3xl bg-accent">
 
@@ -257,14 +348,18 @@ export function TravelDnaScreen() {
             <Sparkles className="size-4 text-clay" />
 
             <h3 className="font-display text-base font-bold text-accent-foreground">
-              Paryata found a match
+              {hasLearned
+                ? 'Paryata found a match'
+                : 'Your first recommendation'}
             </h3>
 
           </div>
 
+
           <h2 className="font-display text-2xl font-extrabold text-accent-foreground">
             {recommendedDestination.name}
           </h2>
+
 
           <p className="mt-1 flex items-center gap-1 text-sm text-accent-foreground/70">
 
@@ -274,21 +369,35 @@ export function TravelDnaScreen() {
 
           </p>
 
+
           <p className="mt-3 text-sm leading-relaxed text-accent-foreground/80">
 
-            Your strongest preference is{' '}
+            {hasLearned ? (
+              <>
+                Your strongest preference is{' '}
 
-            <span className="font-semibold">
-              {strongestPreference}
-            </span>
-
-            . Paryata matched it with a destination
-            that also has strong tourism opportunity
-            and local community benefit.
+                <span className="font-semibold">
+                  {strongestPreference}
+                </span>
+                . Paryata matched it with a destination
+                that also has strong tourism opportunity
+                and local community benefit.
+              </>
+            ) : (
+              <>
+                This is a starting recommendation.
+                As you save places, Paryata will learn
+                your preferences and make this recommendation
+                more personal.
+              </>
+            )}
 
           </p>
 
-          {/* PARYATA MATCH SCORE */}
+
+          {/* ============================================
+              PARYATA MATCH SCORE
+              ============================================ */}
 
           <div className="mt-5 rounded-2xl bg-card/70 p-4">
 
@@ -303,6 +412,7 @@ export function TravelDnaScreen() {
               </span>
 
             </div>
+
 
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
 
@@ -319,7 +429,10 @@ export function TravelDnaScreen() {
 
         </div>
 
-        {/* SCORE BREAKDOWN */}
+
+        {/* ============================================
+            SCORE BREAKDOWN
+            ============================================ */}
 
         <div className="grid grid-cols-2 gap-px bg-border">
 
@@ -341,6 +454,7 @@ export function TravelDnaScreen() {
 
           </div>
 
+
           <div className="bg-card p-4">
 
             <div className="mb-1 flex items-center gap-2">
@@ -359,6 +473,7 @@ export function TravelDnaScreen() {
 
           </div>
 
+
           <div className="bg-card p-4">
 
             <div className="mb-1 flex items-center gap-2">
@@ -376,6 +491,7 @@ export function TravelDnaScreen() {
             </p>
 
           </div>
+
 
           <div className="bg-card p-4">
 
@@ -397,24 +513,33 @@ export function TravelDnaScreen() {
 
         </div>
 
-        {/* DISCOVER BUTTON */}
+
+        {/* ============================================
+            DISCOVER BUTTON
+            ============================================ */}
 
         <div className="p-5">
 
           <button
+            type="button"
             onClick={() => {
+
               setScreen('explore')
 
               setTimeout(() => {
+
                 openDestination(
                   recommendedDestination.id,
                 )
+
               }, 60)
+
             }}
             className="flex w-full items-center justify-center gap-2 rounded-full bg-clay px-4 py-3 text-sm font-bold text-white transition-transform active:scale-95"
           >
 
             Discover{' '}
+
             {recommendedDestination.name}
 
             <ArrowRight className="size-4" />
